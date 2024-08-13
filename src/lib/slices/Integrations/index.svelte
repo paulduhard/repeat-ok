@@ -1,28 +1,95 @@
-<script lang="ts">
-	import type { Content } from '@prismicio/client';
-	import LogoBackground from './LogoBackground.svelte';
-	import background from './background.jpg';
-	import Bounded from '$lib/components/Bounded.svelte';
-	import StylizedLogoMark from './StylizedLogoMark.svelte';
+<script>
+	import { onMount } from 'svelte';
+	import gsap from 'gsap';
 	import { PrismicRichText, PrismicText } from '@prismicio/svelte';
 	import clsx from 'clsx';
 	import IconNpm from '~icons/fa6-brands/npm';
-	import IconCloudflare from '~icons/fa6-brands/cloudflare';
 	import IconGithub from '~icons/fa6-brands/github';
 	import IconFigma from '~icons/fa6-brands/figma';
-	import IconDigitalOcean from '~icons/fa6-brands/digital-ocean';
 	import IconFly from '~icons/fa6-brands/fly';
+	import IconCloudflare from '~icons/fa6-brands/cloudflare';
+	import IconDigitalOcean from '~icons/fa6-brands/digital-ocean';
 
-	export let slice: Content.IntegrationsSlice;
+	import Bounded from '$lib/components/Bounded.svelte';
+	import LogoBackground from './LogoBackground.svelte';
+	import StylizedLogoMark from './StylizedLogoMark.svelte';
+
+	import background from './background.jpg';
 
 	const icons = {
-		npm: IconNpm,
+		digitalocean: IconDigitalOcean,
 		cloudflare: IconCloudflare,
+		npm: IconNpm,
 		github: IconGithub,
 		figma: IconFigma,
-		digitalocean: IconDigitalOcean,
 		fly: IconFly
 	};
+
+	/** @type {import("@prismicio/client").Content.IntegrationsSlice} */
+	export let slice;
+
+	onMount(() => {
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce').matches;
+
+		if (prefersReducedMotion) return;
+
+		const tl = gsap.timeline({
+			repeat: -1,
+			defaults: { ease: 'power2.inOut' }
+		});
+
+		tl.to('.pulsing-logo', {
+			keyframes: [
+				{
+					filter: 'brightness(2)',
+					opacity: 1,
+					duration: 0.4,
+					ease: 'power2.in'
+				},
+				{ filter: 'brightness(1)', opacity: 0.7, duration: 0.9 }
+			]
+		});
+
+		tl.to(
+			'.signal-line',
+			{
+				keyframes: [
+					{ backgroundPosition: '0% 0%' },
+					{
+						backgroundPosition: '100% 100%',
+						stagger: { from: 'center', each: 0.3 },
+						duration: 1
+					}
+				]
+			},
+			'-=1.4'
+		);
+
+		tl.to(
+			'.pulsing-icon',
+			{
+				keyframes: [
+					{
+						opacity: 1,
+						duration: 1,
+						stagger: {
+							from: 'center',
+							each: 0.3
+						}
+					},
+					{
+						opacity: 0.4,
+						duration: 1,
+						stagger: {
+							from: 'center',
+							each: 0.3
+						}
+					}
+				]
+			},
+			'-=2'
+		);
+	});
 </script>
 
 <Bounded
@@ -30,29 +97,29 @@
 	data-slice-variation={slice.variation}
 	class="relative overflow-hidden"
 >
-	<img src={background} alt="" class="absolute inset-0 h-full w-full object-cover" />
+	<img src={background} alt="" class="absolute inset-0 object-cover w-full h-full" />
 	<LogoBackground />
 
 	<div class="relative">
 		<h2
-			class="mx-auto max-w-2xl text-balance bg-gradient-to-b from-violet-50 to-violet-300 bg-clip-text py-2 text-center text-5xl font-medium text-transparent md:text-7xl"
+			class="max-w-2xl py-2 mx-auto text-5xl font-medium text-center text-transparent text-balance bg-gradient-to-b from-violet-50 to-violet-300 bg-clip-text md:text-7xl"
 		>
 			<PrismicText field={slice.primary.heading} />
 		</h2>
 
-		<div class="mx-auto mt-6 max-w-md text-balance text-center text-gray-300">
+		<div class="max-w-md mx-auto mt-6 text-center text-gray-300 text-balance">
 			<PrismicRichText field={slice.primary.body} />
 		</div>
 
-		<div class="mt-20 flex flex-col items-center md:flex-row">
+		<div class="flex flex-col items-center mt-20 md:flex-row">
 			{#each slice.primary.items as item, index}
 				{#if item.icon}
 					{#if index === Math.floor(slice.primary.items.length / 2)}
 						<StylizedLogoMark />
-						<div class="signal-line rotate-180"></div>
+						<div class="rotate-180 signal-line"></div>
 					{/if}
 					<div
-						class="pulsing-icon flex aspect-square shrink-0 items-center justify-center rounded-full border border-violet-500/30 bg-violet-50/25 p-3 text-3xl text-violet-100 opacity-40 md:text-3xl lg:text-5xl"
+						class="flex items-center justify-center p-3 text-3xl border rounded-full pulsing-icon aspect-square shrink-0 border-violet-500/30 bg-violet-50/25 text-violet-100 opacity-40 md:text-3xl lg:text-5xl"
 					>
 						<svelte:component this={icons[item.icon]} />
 					</div>
